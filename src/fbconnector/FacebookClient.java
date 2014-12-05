@@ -5,8 +5,6 @@
 package fbconnector;
 
 import com.restfb.DefaultFacebookClient;
-import com.restfb.DefaultJsonMapper;
-import com.restfb.DefaultWebRequestor;
 
 /**
  *
