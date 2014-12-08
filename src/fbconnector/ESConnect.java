@@ -24,7 +24,6 @@ import org.json.simple.JSONObject;
  */
 public class ESConnect {
 	private Client client;
-	private Index index;
 	private String indexName;
 	private boolean isMapping;
 		
@@ -65,7 +64,8 @@ public class ESConnect {
 			PutMappingRequest pmr = new PutMappingRequest(this.indexName);
 			pmr.source(mapping);
 			pmr.type(documentType);
-			client.admin().indices().putMapping(pmr).actionGet();		
+			//pmr.ignoreConflicts(true);
+			client.admin().indices().putMapping(pmr).actionGet();
 			this.isMapping = true;
 		} catch (Exception e) {
 			Logger.getLogger(ESConnect.class.getName()).log(Level.SEVERE, null, e);

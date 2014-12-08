@@ -9,6 +9,7 @@ import com.restfb.types.Post;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +28,7 @@ class FBDownloader {
   private final com.restfb.FacebookClient facebookClient;
 	private ESConnect ESconn;
 	private String[] FBPages;
-	
+
   /**
 	 *
 	 * @param accessToken
@@ -46,33 +47,47 @@ class FBDownloader {
 	
 	public void startDownload (){
 		for (String page : FBPages) {
+			System.out.println("Začínám stahovat: " + page);
 			indexPosts(page, ESconn);
 		}
 	}
 	
 	private void indexPosts(String fbUser, ESConnect ESconn){
   	Connection<Post> myFeed = facebookClient.fetchConnection(fbUser + "/feed", Post.class);
-		JsonMapper jsonMapper = new DefaultJsonMapper();
-		List<JSONObject> jsonList;
-		
+		List<JSONObject> jsonList = new ArrayList<>();
+		SimpleDateFormat f = new SimpleDateFormat("d.M.yyyy HH:mm:ss");
+		long i = 1;
 		for (List<Post> feedItem : myFeed){
+			//if (i % 20 == 0 || i == 1) 
+				System.out.println("  Zpracovávám feed " + i + "   " + f.format(new Date()));
+			//}
 			for (Post post : feedItem){
-				jsonList = null;
 				List<Comment> comments = getCommentFromPost(facebookClient, post.getId());
-				jsonList = prepareJsonForIndex(post, comments, fbUser);
+				jsonList.addAll(prepareJsonForIndex(post, fbUser));
+				jsonList.addAll(prepareJsonForIndex(comments, post.getId(), null, fbUser));
+				
+				List<Comment> subComments;
+				for (Comment cmnt : comments ){
+					subComments = getCommentFromPost(facebookClient, cmnt.getId());
+					if (!subComments.isEmpty()){
+						jsonList.addAll(prepareJsonForIndex(subComments, post.getId(), cmnt.getId(), fbUser));
+					}
+				}
+				
 				try {
 					ESconn.postElasticSearch(jsonList);
 				} catch (Exception ex) {
 					Logger.getLogger(FBDownloader.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
+			i++;
 		}
 	}	
 	
-	private List<Comment> getCommentFromPost(com.restfb.FacebookClient facebookClient, String postId){
+	private List<Comment> getCommentFromPost(com.restfb.FacebookClient facebookClient, String elementId){
 		List<Comment> comments = new ArrayList();
 
-		Connection<Comment> allComments = facebookClient.fetchConnection(postId + "/comments", Comment.class);
+		Connection<Comment> allComments = facebookClient.fetchConnection(elementId + "/comments", Comment.class);
 		for(List<Comment> postComments : allComments){
 			for (Comment comment : postComments){
 				comments.add(comment);
@@ -81,25 +96,30 @@ class FBDownloader {
 		return comments;
 	}		
 		
-	private List<JSONObject> prepareJsonForIndex(Post post, List<Comment> comments, String page) {
+	private List<JSONObject> prepareJsonForIndex(Post post, String page) {
 		List<JSONObject> jsonList = new ArrayList<JSONObject>();
-
 		Format f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 		JSONObject lineJS = new JSONObject();
-		lineJS.put("message", post.getMessage());
+		lineJS.put("message", post.getMessage()==null?post.getStory():post.getMessage());
 		lineJS.put("userId", post.getFrom().getId());
 		lineJS.put("userName", post.getFrom().getName());
 		lineJS.put("created", f.format(post.getCreatedTime()));
 		//lineJS.put("caption", post.getCaption());
 		//lineJS.put("posttype", post.getType());
 		lineJS.put("type", "post");
-		lineJS.put("likes", post.getLikesCount());
+		lineJS.put("likes", post.getLikes()==null?0:post.getLikes().getData().size());
 		lineJS.put("page", page);
+		lineJS.put("level", -1);
 		lineJS.put("id",  post.getId());
 
 		jsonList.add(lineJS);
-
+		return jsonList;
+	}
+	
+		private List<JSONObject> prepareJsonForIndex(List<Comment> comments, String postId, String parentCommentID, String page) {
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		Format f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		if (comments.size()>0){
 			for (Comment cmnt : comments){
 				JSONObject lnJS = new JSONObject();
@@ -109,10 +129,12 @@ class FBDownloader {
 				lnJS.put("created", f.format(cmnt.getCreatedTime()));			
 				lnJS.put("type", "comment");
 				lnJS.put("likes", cmnt.getLikeCount());
-				lnJS.put("PostID", post.getId());
+				lnJS.put("PostID", postId);
 				lnJS.put("page", page);
 				lnJS.put("id", cmnt.getId());
-
+				lnJS.put("level", parentCommentID == null?0:1);
+				lnJS.put("parentCommentId", parentCommentID==null?null:parentCommentID);
+				
 				jsonList.add(lnJS);
 			}
 		}
@@ -164,6 +186,7 @@ class FBDownloader {
 
 			JSONObject userName = new JSONObject();
 			userName.put("type", "string");
+			userName.put("index" , "not_analyzed");
 		types.put("userName", userName);	
 
 			JSONObject created = new JSONObject();
@@ -173,6 +196,7 @@ class FBDownloader {
 
 			JSONObject postId = new JSONObject();
 			postId.put("type", "string");
+			postId.put("index" , "not_analyzed");
 		types.put("postId", postId);	
 
 			JSONObject likes = new JSONObject();
@@ -185,7 +209,18 @@ class FBDownloader {
 		
 			JSONObject id = new JSONObject();
 			id.put("type", "string");
+			id.put("index" , "not_analyzed");
 		types.put("id", id);	
+
+			JSONObject level = new JSONObject();
+			level.put("type", "long");
+		types.put("level", level);
+
+		if(typ == "comment"){
+				JSONObject parentCommentId = new JSONObject();
+				parentCommentId.put("type", "string");
+			types.put("parentCommentId", parentCommentId);	
+		}
 
 		JSONObject mappingBody = new JSONObject();
 		mappingBody.put("properties", types);
@@ -193,4 +228,5 @@ class FBDownloader {
 		return mappingBody;
 	}
 }
+
 

@@ -21,20 +21,21 @@ public class Main {
 		//přihlášení pomocí Access Token z Graph exploreru
 		//DefaultFacebookClient client = new FacebookClient(accessToken);
 		//přihlášení pomocí aplikace na FB a její appId a app secret
-		DefaultFacebookClient client = new FacebookClient(s.getAppId(), s.getAppSecret() );
+		DefaultFacebookClient client = new FacebookClient(s.getAppId(), s.getAppSecret());
 		FBDownloader fbDwnldr = new FBDownloader(client);		
 		
-		String indexName = "facebook2";
+		String indexName = "banky3";
 		//připojení do ES pomocí Java API
 		ESConnect escon = new ESConnect(indexName);
 		//příprava indexu 
 		if (!escon.isIndex()){
 			escon.createIndex();
-			escon.setIndexSettings(fbDwnldr.getAnalyzer(indexName));
-			escon.createMapping("post", fbDwnldr.prepareMapping("post"));
-			escon.createMapping("comment", fbDwnldr.prepareMapping("comment"));
-		}
-		
+		}	
+		//escon.setIndexSettings(fbDwnldr.getAnalyzer(indexName));
+		escon.createMapping("post", fbDwnldr.prepareMapping("post"));
+		escon.createMapping("comment", fbDwnldr.prepareMapping("comment"));
+		escon.setIndexSettings(fbDwnldr.getAnalyzer(indexName));
+					
 		//načítání dat z FB a odesílání do ES	
 		fbDwnldr.setESConnect(escon);
 		fbDwnldr.setFBPages(s.getFBPages());

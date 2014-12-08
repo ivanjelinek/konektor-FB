@@ -19,7 +19,5 @@ public class FacebookClient extends DefaultFacebookClient{
     public FacebookClient(String appId, String appSecret) {
         com.restfb.FacebookClient.AccessToken accessToken = this.obtainAppAccessToken(appId, appSecret);
         this.accessToken = accessToken.getAccessToken();
-    }
-		
-	
+    }	
 }
