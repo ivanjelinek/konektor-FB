@@ -58,7 +58,6 @@ class FBDownloader {
   	Connection<Post> myFeed = facebookClient.fetchConnection(fbUser + "/feed", Post.class);
 		List<JSONObject> jsonList = new ArrayList<>();
 		SimpleDateFormat f = new SimpleDateFormat("d.M.yyyy HH:mm:ss");
-		SimpleDateFormat fDiff = new SimpleDateFormat("HH:mm:ss");
 		long i = 1;
 		for (List<Post> feedItem : myFeed){
 			//if (i % 20 == 0 || i == 1) 
@@ -88,7 +87,7 @@ class FBDownloader {
 					Logger.getLogger(FBDownloader.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
-			System.out.println("  Zpracována feed page " + i + " (počet postů: " + pN + ", počet komentářů: " + pC + ") za " + (new DateTime().getMillis() - start.getMillis())/1000 + " vteřin");
+			System.out.println(f.format(new Date()) + ": Zpracována feed page " + i + " (počet postů: " + pN + ", počet komentářů: " + pC + ") za " + (new DateTime().getMillis() - start.getMillis())/1000 + " vteřin");
 			i++;
 		}
 	}	
