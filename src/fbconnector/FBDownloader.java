@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.joda.time.Interval;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -56,30 +58,37 @@ class FBDownloader {
   	Connection<Post> myFeed = facebookClient.fetchConnection(fbUser + "/feed", Post.class);
 		List<JSONObject> jsonList = new ArrayList<>();
 		SimpleDateFormat f = new SimpleDateFormat("d.M.yyyy HH:mm:ss");
+		SimpleDateFormat fDiff = new SimpleDateFormat("HH:mm:ss");
 		long i = 1;
 		for (List<Post> feedItem : myFeed){
 			//if (i % 20 == 0 || i == 1) 
-				System.out.println("  Zpracovávám feed " + i + "   " + f.format(new Date()));
+			DateTime start = new DateTime();
 			//}
+			int pN = 0;
+			int pC = 0;
 			for (Post post : feedItem){
+				pN++;
 				List<Comment> comments = getCommentFromPost(facebookClient, post.getId());
+				pC = pC + comments.size();
+				
 				jsonList.addAll(prepareJsonForIndex(post, fbUser));
 				jsonList.addAll(prepareJsonForIndex(comments, post.getId(), null, fbUser));
 				
 				List<Comment> subComments;
 				for (Comment cmnt : comments ){
 					subComments = getCommentFromPost(facebookClient, cmnt.getId());
+					pC = pC + subComments.size();
 					if (!subComments.isEmpty()){
 						jsonList.addAll(prepareJsonForIndex(subComments, post.getId(), cmnt.getId(), fbUser));
 					}
-				}
-				
+				}				
 				try {
 					ESconn.postElasticSearch(jsonList);
 				} catch (Exception ex) {
 					Logger.getLogger(FBDownloader.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
+			System.out.println("  Zpracována feed page " + i + " (počet postů: " + pN + ", počet komentářů: " + pC + ") za " + (new DateTime().getMillis() - start.getMillis())/1000 + " vteřin");
 			i++;
 		}
 	}	
@@ -186,7 +195,7 @@ class FBDownloader {
 
 			JSONObject userName = new JSONObject();
 			userName.put("type", "string");
-			userName.put("index" , "not_analyzed");
+			//userName.put("index" , "not_analyzed");
 		types.put("userName", userName);	
 
 			JSONObject created = new JSONObject();
@@ -196,7 +205,7 @@ class FBDownloader {
 
 			JSONObject postId = new JSONObject();
 			postId.put("type", "string");
-			postId.put("index" , "not_analyzed");
+			//postId.put("index" , "not_analyzed");
 		types.put("postId", postId);	
 
 			JSONObject likes = new JSONObject();
@@ -209,7 +218,7 @@ class FBDownloader {
 		
 			JSONObject id = new JSONObject();
 			id.put("type", "string");
-			id.put("index" , "not_analyzed");
+			//id.put("index" , "not_analyzed");
 		types.put("id", id);	
 
 			JSONObject level = new JSONObject();
