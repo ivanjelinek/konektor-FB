@@ -15,7 +15,6 @@ import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.index.Index;
 import org.json.simple.JSONObject;
 
 /**
@@ -28,7 +27,7 @@ public class ESConnect {
 	private boolean isMapping;
 		
 	public ESConnect (String indexName){
-			Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost",9300));
+			Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("es.vse.cz",9300));
 			this.client = client;
 			this.indexName = indexName;
 			if (!isIndex()){
@@ -95,4 +94,3 @@ public class ESConnect {
 	
 	
 }
-

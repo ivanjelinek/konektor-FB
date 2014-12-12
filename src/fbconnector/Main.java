@@ -24,7 +24,7 @@ public class Main {
 		DefaultFacebookClient client = new FacebookClient(s.getAppToken());
 		FBDownloader fbDwnldr = new FBDownloader(client);		
 		
-		String indexName = "banky4";
+		String indexName = "banky";
 		//připojení do ES pomocí Java API
 		ESConnect escon = new ESConnect(indexName);
 		//příprava indexu 

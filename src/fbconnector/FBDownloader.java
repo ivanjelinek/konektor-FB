@@ -2,8 +2,6 @@ package fbconnector;
 
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
-import com.restfb.DefaultJsonMapper;
-import com.restfb.JsonMapper;
 import com.restfb.types.Comment;
 import com.restfb.types.Post;
 import java.text.Format;
@@ -14,7 +12,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.elasticsearch.common.joda.time.DateTime;
-import org.elasticsearch.common.joda.time.Interval;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -236,5 +233,3 @@ class FBDownloader {
 		return mappingBody;
 	}
 }
-
-
