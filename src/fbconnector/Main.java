@@ -21,7 +21,7 @@ public class Main {
 		//přihlášení pomocí Access Token z Graph exploreru
 		//DefaultFacebookClient client = new FacebookClient(accessToken);
 		//přihlášení pomocí aplikace na FB a její appId a app secret
-		DefaultFacebookClient client = new FacebookClient(s.getAppId(), s.getAppSecret());
+		DefaultFacebookClient client = new FacebookClient(s.getAppToken());
 		FBDownloader fbDwnldr = new FBDownloader(client);		
 		
 		String indexName = "banky4";
