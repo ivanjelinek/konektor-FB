@@ -24,9 +24,9 @@ public class Main {
 		DefaultFacebookClient client = new FacebookClient(s.getAppToken());
 		FBDownloader fbDwnldr = new FBDownloader(client, s.getLimitPages());		
 		
-		String indexName = "banky";
+		//String indexName = "banky";
 		//připojení do ES pomocí Java API
-		ESConnect escon = new ESConnect(indexName);
+		ESConnect escon = new ESConnect(s.getIndexES());
 		//příprava indexu 
 		if (!escon.isIndex()){
 			escon.createIndex();
@@ -34,13 +34,13 @@ public class Main {
 		//escon.setIndexSettings(fbDwnldr.getAnalyzer(indexName));
 		escon.createMapping("post", fbDwnldr.prepareMapping("post"));
 		escon.createMapping("comment", fbDwnldr.prepareMapping("comment"));
-		escon.setIndexSettings(fbDwnldr.getAnalyzer(indexName));
+		escon.setIndexSettings(fbDwnldr.getAnalyzer(s.getIndexES()));
 					
 		//načítání dat z FB a odesílání do ES	
 		fbDwnldr.setESConnect(escon);
 		fbDwnldr.setFBPages(s.getFBPages());
 		
-		fbDwnldr.startDownload();
+		fbDwnldr.startDownload(s);
 		
 		escon.endSession();
 	}
