@@ -27,12 +27,17 @@ class FBDownloader {
   private final com.restfb.FacebookClient facebookClient;
 	private ESConnect ESconn;
 	private String[] FBPages;
+        private int limitPages = 15;
 
   /**
 	 *
 	 * @param accessToken
 	 */
-	public FBDownloader(DefaultFacebookClient facebookClient) {
+	public FBDownloader(DefaultFacebookClient facebookClient, int limitPages) {
+		this.facebookClient = facebookClient;
+                this.limitPages = limitPages;
+  }
+        	public FBDownloader(DefaultFacebookClient facebookClient) {
 		this.facebookClient = facebookClient;
   }
 	
@@ -85,7 +90,11 @@ class FBDownloader {
 				}
 			}
 			System.out.println(f.format(new Date()) + ": Zpracována feed page " + i + " (počet postů: " + pN + ", počet komentářů: " + pC + ") za " + (new DateTime().getMillis() - start.getMillis())/1000 + " vteřin");
-			i++;
+			if( i > limitPages) {
+                            break;
+                        }
+                        i++;
+                        
 		}
 	}	
 	
