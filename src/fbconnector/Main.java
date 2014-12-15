@@ -22,7 +22,7 @@ public class Main {
 		//DefaultFacebookClient client = new FacebookClient(accessToken);
 		//přihlášení pomocí aplikace na FB a její appId a app secret
 		DefaultFacebookClient client = new FacebookClient(s.getAppToken());
-		FBDownloader fbDwnldr = new FBDownloader(client);		
+		FBDownloader fbDwnldr = new FBDownloader(client, s.getLimitPages());		
 		
 		String indexName = "banky";
 		//připojení do ES pomocí Java API
