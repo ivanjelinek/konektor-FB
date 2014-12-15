@@ -1,4 +1,4 @@
-﻿/*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -12,12 +12,15 @@ package fbconnector;
 class Settings {
     
     public String getAppToken(){
-        return "";
+        return "1441688612771153|DFRtjsw4UuFbHyilWQJ3BK4ftc0";
     }   
+    
+    public int getLimitPages(){
+        return 5;
+    }
 
     public String[] getFBPages() {
         String[] array = {
-            "iDNES.cz",
             "denikE15",
             "ceska.piratska.strana",
             "Burinka.stavebni.sporitelna",
@@ -40,7 +43,8 @@ class Settings {
             "komercni.banka", 
             "ceskatelevize", 
             "ihned.cz",
-            "novatelevize"
+            "novatelevize",
+            "iDNES.cz"
         };
         return array;
     }
