@@ -12,7 +12,7 @@ package fbconnector;
 class Settings {
     
     public String getAppToken(){
-        return "1441688612771153|DFRtjsw4UuFbHyilWQJ3BK4ftc0";
+        return "";
     }   
     
     public int getLimitPages(){
