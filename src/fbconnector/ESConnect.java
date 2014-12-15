@@ -15,6 +15,8 @@ import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.node.Node;
+import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import org.json.simple.JSONObject;
 
 /**
@@ -22,75 +24,80 @@ import org.json.simple.JSONObject;
  * @author Petr
  */
 public class ESConnect {
-	private Client client;
-	private String indexName;
-	private boolean isMapping;
-		
-	public ESConnect (String indexName){
-			Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("es.vse.cz",9300));
-			this.client = client;
-			this.indexName = indexName;
-			if (!isIndex()){
-				this.isMapping = false;
-			}
-	}
 
-	public void postElasticSearch(JSONObject jsn) throws Exception{
-		if (this.isMapping == false) throw new Exception("Pro tento index neexistuje mapping");
-		client.prepareIndex(this.indexName, jsn.get("type").toString(), jsn.get("id").toString())
-									.setSource(jsn).execute().actionGet();
-	}
-	
-	public void postElasticSearch(List<JSONObject> jsonList) throws Exception{
-		if (this.isMapping == false) throw new Exception("Pro tento index neexistuje mapping");
-		for (JSONObject jsnObj : jsonList){
-			client.prepareIndex(this.indexName, jsnObj.get("type").toString(), jsnObj.get("id").toString())
-									.setSource(jsnObj).execute().actionGet();
-		}
-	}
-	
-	public boolean isIndex(){
-		final IndicesExistsResponse res = client.admin().indices().prepareExists(this.indexName).execute().actionGet();
-		return res.isExists();
-	}
-	
-	public void createIndex(){
-		client.admin().indices().prepareCreate(this.indexName).execute().actionGet();
-	}
-		
-	public void createMapping(String documentType, JSONObject mapping){
-		try {
-			PutMappingRequest pmr = new PutMappingRequest(this.indexName);
-			pmr.source(mapping);
-			pmr.type(documentType);
-			//pmr.ignoreConflicts(true);
-			client.admin().indices().putMapping(pmr).actionGet();
-			this.isMapping = true;
-		} catch (Exception e) {
-			Logger.getLogger(ESConnect.class.getName()).log(Level.SEVERE, null, e);
-		}
-	}
-	
-	public void setIndexSettings(JSONObject analyzer){
-		try {
-			CloseIndexRequest cir = new CloseIndexRequest(this.indexName);
-			client.admin().indices().close(cir).actionGet();
-			
-			UpdateSettingsRequest usrq = new UpdateSettingsRequest(this.indexName);
-			usrq.settings(analyzer);
-			client.admin().indices().updateSettings(usrq).actionGet();
-			
-			OpenIndexRequest oir = new OpenIndexRequest(this.indexName);
-			client.admin().indices().open(oir);
-		} catch (Exception e) {
-			Logger.getLogger(ESConnect.class.getName()).log(Level.SEVERE, null, e);
-		}
-	}
-	
-					
-	public void endSession(){
-		client.close();
-	}
-	
-	
+    private Client client;
+    private String indexName;
+    private boolean isMapping;
+
+    public ESConnect(String indexName) {
+        //		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("es.vse.cz",9300));
+        Node node = nodeBuilder().clusterName("kcrs-es").node();
+        Client client = node.client();
+        this.client = client;
+        this.indexName = indexName;
+        if (!isIndex()) {
+            this.isMapping = false;
+        }
+    }
+
+    public void postElasticSearch(JSONObject jsn) throws Exception {
+        if (this.isMapping == false) {
+            throw new Exception("Pro tento index neexistuje mapping");
+        }
+        client.prepareIndex(this.indexName, jsn.get("type").toString(), jsn.get("id").toString())
+                .setSource(jsn).execute().actionGet();
+    }
+
+    public void postElasticSearch(List<JSONObject> jsonList) throws Exception {
+        if (this.isMapping == false) {
+            throw new Exception("Pro tento index neexistuje mapping");
+        }
+        for (JSONObject jsnObj : jsonList) {
+            client.prepareIndex(this.indexName, jsnObj.get("type").toString(), jsnObj.get("id").toString())
+                    .setSource(jsnObj).execute().actionGet();
+        }
+    }
+
+    public boolean isIndex() {
+        final IndicesExistsResponse res = client.admin().indices().prepareExists(this.indexName).execute().actionGet();
+        return res.isExists();
+    }
+
+    public void createIndex() {
+        client.admin().indices().prepareCreate(this.indexName).execute().actionGet();
+    }
+
+    public void createMapping(String documentType, JSONObject mapping) {
+        try {
+            PutMappingRequest pmr = new PutMappingRequest(this.indexName);
+            pmr.source(mapping);
+            pmr.type(documentType);
+            //pmr.ignoreConflicts(true);
+            client.admin().indices().putMapping(pmr).actionGet();
+            this.isMapping = true;
+        } catch (Exception e) {
+            Logger.getLogger(ESConnect.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    public void setIndexSettings(JSONObject analyzer) {
+        try {
+            CloseIndexRequest cir = new CloseIndexRequest(this.indexName);
+            client.admin().indices().close(cir).actionGet();
+
+            UpdateSettingsRequest usrq = new UpdateSettingsRequest(this.indexName);
+            usrq.settings(analyzer);
+            client.admin().indices().updateSettings(usrq).actionGet();
+
+            OpenIndexRequest oir = new OpenIndexRequest(this.indexName);
+            client.admin().indices().open(oir);
+        } catch (Exception e) {
+            Logger.getLogger(ESConnect.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    public void endSession() {
+        client.close();
+    }
+
 }
