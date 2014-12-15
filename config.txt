@@ -5,7 +5,7 @@ port:9200
 index:banky
 type:x
 pageLimit:3
-appToken:1441688612771153|DFRtjsw4UuFbHyilWQJ3BK4ftc0
+appToken:
 
 [task]
 
