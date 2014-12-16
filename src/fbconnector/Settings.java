@@ -18,7 +18,7 @@ import java.util.TreeMap;
  */
 class Settings {
 
-    private String configURL;
+    private String configURL = "config.txt";
     private String ipES;
     private TreeMap<String, String> segmentMap = new TreeMap();
     private String portES;
@@ -30,10 +30,10 @@ class Settings {
     private Settings thisSetting = null;
 
     public Settings() {
-            loadConfig();
+        loadConfig();
     }
-    
-    public Settings getThisSettings(){
+
+    public Settings getThisSettings() {
         return this.thisSetting;
     }
 
@@ -44,7 +44,8 @@ class Settings {
     public int getLimitPages() {
         return this.pageLimit;
     }
-        public String getIpES() {
+
+    public String getIpES() {
         return ipES;
     }
 
@@ -63,10 +64,10 @@ class Settings {
     public int getPageLimit() {
         return pageLimit;
     }
-    
-    public String getSegmentForPage(String pageName){
-        for (String key: segmentMap.keySet() ){
-            if (pageName.equalsIgnoreCase(key)){
+
+    public String getSegmentForPage(String pageName) {
+        for (String key : segmentMap.keySet()) {
+            if (pageName.equalsIgnoreCase(key)) {
                 return segmentMap.get(key);
             }
         }
@@ -113,6 +114,7 @@ class Settings {
 
     private void loadConfig() {
         BufferedReader br = null;
+        System.out.println(new Date() + " Loading config.");
         try {
             br = new BufferedReader(new FileReader(this.configURL));
             String line = br.readLine();
@@ -169,12 +171,21 @@ class Settings {
 
                         }
                         line = br.readLine();
+                        if (line.contains("[end]")) {
+                            break;
+                        }
+
                     }
                 }
+                if (line.contains("[end]")) {
+                    break;
+                }
+                line = br.readLine();
             }
         } catch (IOException ex) {
             System.out.println(new Date() + " IO Exception in reading config.");
         }
+        System.out.println(new Date() + " Config loaded.");
     }
 
 }

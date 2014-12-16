@@ -31,7 +31,7 @@ public class ESConnect {
 
     public ESConnect(String indexName) {
         //		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("es.vse.cz",9300));
-        Node node = nodeBuilder().clusterName("kcrs-es").node();
+        Node node = nodeBuilder().client(true).clusterName("kcrs-es").node();
         Client client = node.client();
         this.client = client;
         this.indexName = indexName;

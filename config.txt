@@ -30,7 +30,7 @@ download:komercni.banka:segment:finance
 download:ceskatelevize:segment:media
 download:ihned.cz:segment:media
 download:denikE15:segment:media
-download:ceska.piratska.strana
+download:ceska.piratska.strana:segment:politika
 download:novatelevize:segment:media
 download:iDNES.cz:segment:media
 
