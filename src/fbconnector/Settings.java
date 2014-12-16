@@ -26,7 +26,7 @@ class Settings {
     private String typeES;
     private ArrayList<String> targetList = new ArrayList<>();
     private int pageLimit;
-    private String appToken = "1441688612771153|DFRtjsw4UuFbHyilWQJ3BK4ftc0";
+    private String appToken = "";
     private Settings thisSetting = null;
 
     public Settings() {
