@@ -128,6 +128,7 @@ class FBDownloader {
         lineJS.put("page", page);
         lineJS.put("level", -1);
         lineJS.put("id", post.getId());
+        lineJS.put("segment", segment);
 
         jsonList.add(lineJS);
         return jsonList;
@@ -217,7 +218,7 @@ class FBDownloader {
         types.put("postId", postId);
 
         JSONObject likes = new JSONObject();
-        likes.put("type", "string");
+        likes.put("type", "integer");
         types.put("likes", likes);
 
         JSONObject page = new JSONObject();
