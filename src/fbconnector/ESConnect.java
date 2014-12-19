@@ -4,6 +4,7 @@
  */
 package fbconnector;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,12 +27,13 @@ import org.json.simple.JSONObject;
 public class ESConnect {
 
     private Client client;
+    private Node node;
     private String indexName;
     private boolean isMapping;
 
     public ESConnect(String indexName) {
         //		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("es.vse.cz",9300));
-        Node node = nodeBuilder().client(true).clusterName("kcrs-es").node();
+        node = nodeBuilder().client(true).clusterName("kcrs-es").node();
         Client client = node.client();
         this.client = client;
         this.indexName = indexName;
@@ -98,6 +100,8 @@ public class ESConnect {
 
     public void endSession() {
         client.close();
+        node.close();
+        System.out.println(new Date() + " Session of FB Connector closed.");
     }
 
 }
