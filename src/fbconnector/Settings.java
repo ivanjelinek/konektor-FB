@@ -24,17 +24,42 @@ class Settings {
     private String portES;
     private String indexES;
     private String typeES;
+    private String appID;
     private ArrayList<String> targetList = new ArrayList<>();
     private int pageLimit;
     private String appToken = "";
     private Settings thisSetting = null;
+    private String appAccessToken;
+    private String appSecret;
+    private String sentimentModel;
 
+    public Settings(String configPath) {
+        this.configURL = configPath;
+        loadConfig();
+    }
+    
     public Settings() {
         loadConfig();
     }
 
+    public String getSentimentModel(){
+        return this.sentimentModel;
+    }
+    
     public Settings getThisSettings() {
         return this.thisSetting;
+    }
+    
+    public String getAppID() {
+        return this.appID;
+    }
+    
+    public String getAccessToken() {
+        return this.appAccessToken;
+    }
+            
+    public String getAppSecret(){
+        return this.appSecret;
     }
 
     public String getAppToken() {
@@ -154,6 +179,18 @@ class Settings {
                             }
                             if (pole[0].equals("type")) {
                                 this.typeES = pole[1];
+                            }
+                            if (pole[0].equals("appID")) {
+                                this.appID = pole[1];
+                            }
+                            if (pole[0].equals("appAccessToken")) {
+                                this.appAccessToken = pole[1];
+                            }
+                            if (pole[0].equals("appSecret")) {
+                                this.appSecret = pole[1];
+                            }
+                            if (pole[0].equals("sentimentModel")) {
+                                this.sentimentModel = pole[1];
                             }
                         }
                     }

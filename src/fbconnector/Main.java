@@ -5,6 +5,7 @@
 package fbconnector;
 
 import com.restfb.DefaultFacebookClient;
+import com.restfb.Version;
 
 /**
  *
@@ -17,12 +18,21 @@ public class Main {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
-		Settings s = new Settings();
+            Settings s;
+            if (args.length == 0) {
+                s = new Settings();
+            } else {
+                s = new Settings(args[0]);
+            }
 		//přihlášení pomocí Access Token z Graph exploreru
 		//DefaultFacebookClient client = new FacebookClient(accessToken);
 		//přihlášení pomocí aplikace na FB a její appId a app secret
-		DefaultFacebookClient client = new FacebookClient(s.getAppToken());
-		FBDownloader fbDwnldr = new FBDownloader(client, s.getLimitPages());		
+		//DefaultFacebookClient client = new FacebookClient(s.getAppToken());
+                System.out.println("Access token: " + s.getAccessToken());
+                System.out.println("App Secret: " + s.getAppSecret());
+                System.out.println("APPID: " + s.getAppID());
+                DefaultFacebookClient client = new DefaultFacebookClient(s.getAccessToken(), s.getAppSecret(), Version.VERSION_2_5);
+		FBDownloader fbDwnldr = new FBDownloader(client, s.getLimitPages(), s);		
 		
 		//String indexName = "banky";
 		//připojení do ES pomocí Java API

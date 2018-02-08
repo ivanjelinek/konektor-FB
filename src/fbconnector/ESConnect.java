@@ -15,6 +15,7 @@ import org.elasticsearch.action.admin.indices.open.OpenIndexRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.Node;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
@@ -32,8 +33,8 @@ public class ESConnect {
     private boolean isMapping;
 
     public ESConnect(String indexName) {
-        //		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("es.vse.cz",9300));
-        node = nodeBuilder().client(true).clusterName("kcrs-es").node();
+        //Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost",9300));
+        node = nodeBuilder().settings(Settings.settingsBuilder().put("path.home", "./")).client(true).clusterName("kcrs-es").node();
         Client client = node.client();
         this.client = client;
         this.indexName = indexName;

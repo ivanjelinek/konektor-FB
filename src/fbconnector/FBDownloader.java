@@ -4,14 +4,20 @@ import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.types.Comment;
 import com.restfb.types.Post;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.elasticsearch.common.joda.time.DateTime;
+import opennlp.tools.doccat.DoccatModel;
+import opennlp.tools.doccat.DocumentCategorizerME;
+//import org.elasticsearch.common.joda.time.DateTime;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -28,17 +34,19 @@ class FBDownloader {
     private ESConnect ESconn;
     private String[] FBPages;
     private int limitPages = 15;
+    private Settings s;
 
     /**
      *
      * @param accessToken
      */
-    public FBDownloader(DefaultFacebookClient facebookClient, int limitPages) {
+    public FBDownloader(DefaultFacebookClient facebookClient, int limitPages, Settings s) {
         this.facebookClient = facebookClient;
         this.limitPages = limitPages;
+        this.s = s;
     }
 
-    public FBDownloader(DefaultFacebookClient facebookClient) {
+    public FBDownloader(DefaultFacebookClient facebookClient, Settings s) {
         this.facebookClient = facebookClient;
     }
 
@@ -64,7 +72,7 @@ class FBDownloader {
         long i = 1;
         for (List<Post> feedItem : myFeed) {
             //if (i % 20 == 0 || i == 1) 
-            DateTime start = new DateTime();
+            //DateTime start = new DateTime();
             //}
             int pN = 0;
             int pC = 0;
@@ -90,7 +98,7 @@ class FBDownloader {
                     Logger.getLogger(FBDownloader.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            System.out.println(f.format(new Date()) + ": Zpracována feed page " + i + " (počet postů: " + pN + ", počet komentářů: " + pC + ") za " + (new DateTime().getMillis() - start.getMillis()) / 1000 + " vteřin");
+            //System.out.println(f.format(new Date()) + ": Zpracována feed page " + i + " (počet postů: " + pN + ", počet komentářů: " + pC + ") za " + (new DateTime().getMillis() - start.getMillis()) / 1000 + " vteřin");
             if (i > limitPages) {
                 break;
             }
@@ -118,8 +126,9 @@ class FBDownloader {
 
         JSONObject lineJS = new JSONObject();
         lineJS.put("message", post.getMessage() == null ? post.getStory() : post.getMessage());
-        lineJS.put("userId", post.getFrom().getId());
-        lineJS.put("userName", post.getFrom().getName());
+        lineJS.put("sentiment", getSentimentForText(post.getMessage() == null ? post.getStory() : post.getMessage()));
+        //lineJS.put("userId", post.getFrom().getId());
+        //lineJS.put("userName", post.getFrom().getName());
         lineJS.put("created", f.format(post.getCreatedTime()));
 		//lineJS.put("caption", post.getCaption());
         //lineJS.put("posttype", post.getType());
@@ -141,8 +150,9 @@ class FBDownloader {
             for (Comment cmnt : comments) {
                 JSONObject lnJS = new JSONObject();
                 lnJS.put("message", cmnt.getMessage());
-                lnJS.put("userId", cmnt.getFrom().getId());
-                lnJS.put("userName", cmnt.getFrom().getName());
+                //lnJS.put("userId", cmnt.getFrom().getId());
+                //lnJS.put("userName", cmnt.getFrom().getName());
+                lnJS.put("sentiment", getSentimentForText(cmnt.getMessage()));
                 lnJS.put("created", f.format(cmnt.getCreatedTime()));
                 lnJS.put("type", "comment");
                 lnJS.put("likes", cmnt.getLikeCount());
@@ -244,5 +254,25 @@ class FBDownloader {
         mappingBody.put("properties", types);
 
         return mappingBody;
+    }
+    
+    private int getSentimentForText(String obsahPrispevku){
+        try {
+            InputStream is = new FileInputStream(this.s.getSentimentModel());
+            DoccatModel m = new DoccatModel(is);
+            String inputText = obsahPrispevku;
+            DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
+            double[] outcomes = myCategorizer.categorize(inputText);
+            String category = myCategorizer.getBestCategory(outcomes);
+            if (category.equals("positive")){
+                return 1;
+            } else if (category.equals("negative")){
+                return -1;
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(FBDownloader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
     }
 }
